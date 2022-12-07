@@ -1,0 +1,11 @@
+name: PluginsUI
+version: '${project.version}'
+main: com.github.tanokun.pluginsui.PluginsUIMain
+api-version: 1.18
+
+depend:
+  - CommandAPI
+  - ProtocolLib
+
+permissions:
+  plugins.command.file: { default: op }
