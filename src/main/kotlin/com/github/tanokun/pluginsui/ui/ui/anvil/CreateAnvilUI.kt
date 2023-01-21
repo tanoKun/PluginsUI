@@ -34,7 +34,7 @@ class CreateAnvilUI(val file: File, private val isFile: Boolean): AbstractUI() {
     }
 }
 
-private object CreateAnvilListener: PacketAdapter(pluginsUIMain, PacketType.Play.Client.WINDOW_CLICK, PacketType.Play.Client.CLOSE_WINDOW, PacketType.Play.Server.CLOSE_WINDOW) {
+class CreateAnvilListener: PacketAdapter(pluginsUIMain, PacketType.Play.Client.WINDOW_CLICK, PacketType.Play.Client.CLOSE_WINDOW, PacketType.Play.Server.CLOSE_WINDOW) {
     init {
         pluginsUIMain.protocolManager.addPacketListener(this)
     }

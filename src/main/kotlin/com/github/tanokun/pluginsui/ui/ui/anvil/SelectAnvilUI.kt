@@ -34,7 +34,7 @@ class SelectAnvilUI(val file: File): AbstractUI() {
     }
 }
 
-private object SelectAnvilListener: PacketAdapter(pluginsUIMain, PacketType.Play.Client.WINDOW_CLICK, PacketType.Play.Client.CLOSE_WINDOW, PacketType.Play.Server.CLOSE_WINDOW) {
+class SelectAnvilListener: PacketAdapter(pluginsUIMain, PacketType.Play.Client.WINDOW_CLICK, PacketType.Play.Client.CLOSE_WINDOW, PacketType.Play.Server.CLOSE_WINDOW) {
     init {
         pluginsUIMain.protocolManager.addPacketListener(this)
     }
@@ -44,7 +44,6 @@ private object SelectAnvilListener: PacketAdapter(pluginsUIMain, PacketType.Play
     }
 
     override fun onPacketReceiving(e: PacketEvent) {
-
         if (e.packet.type == PacketType.Play.Client.CLOSE_WINDOW) {
             e.player.removeMetadata(PLUGINS_UI_SELECT, pluginsUIMain)
             return

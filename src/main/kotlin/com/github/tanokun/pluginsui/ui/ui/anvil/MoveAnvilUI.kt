@@ -36,7 +36,7 @@ class MoveAnvilUI(val file: File): AbstractUI() {
     }
 }
 
-private object RenameAnvilListener: PacketAdapter(pluginsUIMain, PacketType.Play.Client.WINDOW_CLICK, PacketType.Play.Client.CLOSE_WINDOW, PacketType.Play.Server.CLOSE_WINDOW) {
+class RenameAnvilListener: PacketAdapter(pluginsUIMain, PacketType.Play.Client.WINDOW_CLICK, PacketType.Play.Client.CLOSE_WINDOW, PacketType.Play.Server.CLOSE_WINDOW) {
     init {
         pluginsUIMain.protocolManager.addPacketListener(this)
     }

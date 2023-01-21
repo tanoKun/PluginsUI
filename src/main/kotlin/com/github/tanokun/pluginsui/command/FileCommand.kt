@@ -7,15 +7,19 @@ import dev.jorel.commandapi.arguments.TextArgument
 import dev.jorel.commandapi.executors.PlayerCommandExecutor
 import com.github.tanokun.pluginsui.command.command.AbstractCommand
 import com.github.tanokun.pluginsui.command.command.SubCommand
+import com.github.tanokun.pluginsui.ui.ExtensionConfig
 import com.github.tanokun.pluginsui.ui.item.operate.PLUGINS_UI_METADATA_KEY_EDIT
 import com.github.tanokun.pluginsui.ui.item.operate.PLUGINS_UI_METADATA_KEY_EDIT_PASTEBIN
 import com.github.tanokun.pluginsui.ui.item.operate.pluginsUIEditDownload
 import com.github.tanokun.pluginsui.ui.ui.PluginsUI
 import com.github.tanokun.pluginsui.ui.ui.pastebinClient
+import com.github.tanokun.pluginsui.util.config.ConfigEntity
 import com.github.tanokun.pluginsui.util.io.runTaskAsync
 import com.github.tanokun.pluginsui.util.io.runTaskSync
+import org.bukkit.command.Command
 import org.bukkit.entity.Player
 import java.io.File
+import java.util.*
 
 class FileCommand : AbstractCommand(
     CommandAPICommand("file")
@@ -24,6 +28,32 @@ class FileCommand : AbstractCommand(
             PluginsUI("plugins", player).showUI(player)
         })
 ) {
+
+    @SubCommand
+    private fun reload(): CommandAPICommand {
+        return CommandAPICommand("reload")
+            .executesPlayer(PlayerCommandExecutor { p: Player, args: Array<Any> ->
+                val permission = ConfigEntity(pluginsUIMain, File(pluginsUIMain.dataFolder, "userPermission.yml"), "userPermission.yml")
+                ExtensionConfig.eachPermissions.clear()
+                ExtensionConfig.accessPermissions.clear()
+                permission.createConfig()
+                for (uuidString in permission.config.getKeys(false)) {
+                    val uuid = UUID.fromString(uuidString)
+                    val playerAccessPermissions = arrayListOf<String>()
+                    permission.config.getStringList(uuidString).forEach {
+                        if (it == "ALL") {
+                            playerAccessPermissions.add("ALL")
+                            return@forEach
+                        }
+                        val split = it.split(" ")
+                        playerAccessPermissions.add(split[0])
+                        ExtensionConfig.eachPermissions[Pair(uuid, split[0])] = split[1]
+                    }
+                    ExtensionConfig.accessPermissions[uuid] = playerAccessPermissions
+                }
+            })
+    }
+
     @SubCommand
     private fun edit(): CommandAPICommand {
         return CommandAPICommand("edit")
