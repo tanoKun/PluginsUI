@@ -33,7 +33,13 @@ class OperateTextDownloadPastebinButton(val file: File, val player: Player): Bas
         if (file.isDirectory) return
         if (!ExtensionConfig.textExtensions.contains(file.extension)) return
 
-        val permissions = ExtensionConfig.eachPermissions[Pair(p.uniqueId, file.path)] ?: ""
+        var permissions = ExtensionConfig.eachPermissions[Pair(p.uniqueId, file.path)] ?: ""
+
+        var loopFile = file.parentFile
+        while (loopFile != null && permissions == "") {
+            permissions = ExtensionConfig.eachPermissions[Pair(p.uniqueId, loopFile.path)] ?: ""
+            loopFile = loopFile.parentFile
+        }
 
         if (!permissions.contains("DOWNLOAD") && !permissions.contains("ALL") && !(ExtensionConfig.accessPermissions[p.uniqueId] ?: arrayListOf()).contains("ALL")) {
             p.sendMessage("§c[PluginsUI] あなたはこのフォルダに対するダウンロード権限を持っていません")

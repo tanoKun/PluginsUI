@@ -28,7 +28,13 @@ class OperateDeleteButton(private val file: File): BaseItem() {
     }
 
     override fun handleClick(clickType: ClickType, p: Player, e: InventoryClickEvent) {
-        val permissions = ExtensionConfig.eachPermissions[Pair(p.uniqueId, file.path)] ?: ""
+        var permissions = ExtensionConfig.eachPermissions[Pair(p.uniqueId, file.path)] ?: ""
+
+        var loopFile = file.parentFile
+        while (loopFile != null && permissions == "") {
+            permissions = ExtensionConfig.eachPermissions[Pair(p.uniqueId, loopFile.path)] ?: ""
+            loopFile = loopFile.parentFile
+        }
 
         p.closeInventory()
 

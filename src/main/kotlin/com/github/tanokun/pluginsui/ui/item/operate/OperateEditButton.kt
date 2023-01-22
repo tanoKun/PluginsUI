@@ -36,7 +36,13 @@ class OperateEditButton(val file: File): BaseItem() {
     override fun handleClick(clickType: ClickType, p: Player, e: InventoryClickEvent) {
         if (file.isDirectory) return
 
-        val permissions = ExtensionConfig.eachPermissions[Pair(p.uniqueId, file.path)] ?: ""
+        var permissions = ExtensionConfig.eachPermissions[Pair(p.uniqueId, file.path)] ?: ""
+
+        var loopFile = file.parentFile
+        while (loopFile != null && permissions == "") {
+            permissions = ExtensionConfig.eachPermissions[Pair(p.uniqueId, loopFile.path)] ?: ""
+            loopFile = loopFile.parentFile
+        }
 
         if (!permissions.contains("EDIT") && !permissions.contains("ALL") && !(ExtensionConfig.accessPermissions[p.uniqueId] ?: arrayListOf()).contains("ALL")) {
             p.sendMessage("§c[PluginsUI] あなたはこのフォルダに対する編集権限を持っていません")

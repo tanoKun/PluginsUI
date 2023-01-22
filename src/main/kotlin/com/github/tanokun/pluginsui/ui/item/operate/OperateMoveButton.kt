@@ -21,7 +21,13 @@ class OperateMoveButton(private val folder: File): BaseItem() {
     }
 
     override fun handleClick(clickType: ClickType, p: Player, e: InventoryClickEvent) {
-        val permissions = ExtensionConfig.eachPermissions[Pair(p.uniqueId, folder.path)] ?: ""
+        var permissions = ExtensionConfig.eachPermissions[Pair(p.uniqueId, folder.path)] ?: ""
+
+        var loopFolder = folder.parentFile
+        while (loopFolder != null && permissions == "") {
+            permissions = ExtensionConfig.eachPermissions[Pair(p.uniqueId, loopFolder.path)] ?: ""
+            loopFolder = loopFolder.parentFile
+        }
 
         if (!permissions.contains("MOVE") && !permissions.contains("ALL") && !(ExtensionConfig.accessPermissions[p.uniqueId] ?: arrayListOf()).contains("ALL")) {
             p.sendMessage("§c[PluginsUI] あなたはこのフォルダに対する移動権限を持っていません")
