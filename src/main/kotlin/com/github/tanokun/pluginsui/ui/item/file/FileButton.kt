@@ -1,10 +1,6 @@
 package com.github.tanokun.pluginsui.ui.item.file
 
 import com.github.tanokun.pluginsui.ui.ExtensionConfig
-
-import de.studiocode.invui.item.ItemProvider
-import de.studiocode.invui.item.builder.ItemBuilder
-import de.studiocode.invui.item.impl.BaseItem
 import com.github.tanokun.pluginsui.ui.ui.OperateUI
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
@@ -13,9 +9,12 @@ import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
+import xyz.xenondevs.invui.item.ItemProvider
+import xyz.xenondevs.invui.item.builder.ItemBuilder
+import xyz.xenondevs.invui.item.impl.AbstractItem
 import java.io.File
 
-class FileButton(private val file: File, private val glowing: Boolean = false): BaseItem() {
+class FileButton(private val file: File, private val glowing: Boolean = false): AbstractItem() {
     override fun getItemProvider(): ItemProvider {
 
         val extension = file.extension

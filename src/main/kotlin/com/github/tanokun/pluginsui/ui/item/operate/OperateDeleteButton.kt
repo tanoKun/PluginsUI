@@ -1,11 +1,8 @@
 package com.github.tanokun.pluginsui.ui.item.operate
 
-import de.studiocode.invui.item.ItemProvider
-import de.studiocode.invui.item.builder.ItemBuilder
-import de.studiocode.invui.item.impl.BaseItem
-import com.github.tanokun.pluginsui.ui.ExtensionConfig
-import com.github.tanokun.pluginsui.ui.ui.PluginsUI
 import com.github.tanokun.pluginsui.pluginsUIMain
+import com.github.tanokun.pluginsui.ui.ui.PluginsUI
+import com.github.tanokun.pluginsui.util.AbstractFile
 import org.apache.commons.io.FileUtils
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -13,14 +10,17 @@ import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryClickEvent
+import xyz.xenondevs.invui.item.ItemProvider
+import xyz.xenondevs.invui.item.builder.ItemBuilder
+import xyz.xenondevs.invui.item.impl.AbstractItem
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class OperateDeleteButton(private val file: File): BaseItem() {
-    val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss")
+class OperateDeleteButton(private val abstractFile: AbstractFile): AbstractItem() {
+    private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss")
     override fun getItemProvider(): ItemProvider {
-        val name = if (file.isFile) "ファイル" else "フォルダ"
+        val name = if (abstractFile.file.isFile) "ファイル" else "フォルダ"
 
         return ItemBuilder(Material.BARRIER)
             .setDisplayName("§c§l${name}を削除する")
@@ -28,30 +28,23 @@ class OperateDeleteButton(private val file: File): BaseItem() {
     }
 
     override fun handleClick(clickType: ClickType, p: Player, e: InventoryClickEvent) {
-        var permissions = ExtensionConfig.eachPermissions[Pair(p.uniqueId, file.path)] ?: ""
-
-        var loopFile = file.parentFile
-        while (loopFile != null && permissions == "") {
-            permissions = ExtensionConfig.eachPermissions[Pair(p.uniqueId, loopFile.path)] ?: ""
-            loopFile = loopFile.parentFile
-        }
-
         p.closeInventory()
 
-        if (permissions.contains("DELETE") || permissions.contains("ALL") || (ExtensionConfig.accessPermissions[p.uniqueId] ?: arrayListOf()).contains("ALL")) {
-            val name = if (file.isFile) "ファイル" else "フォルダ"
+        if (abstractFile.canDelete) {
+            val name = if (abstractFile.file.isFile) "ファイル" else "フォルダ"
             Bukkit.getScheduler().runTaskAsynchronously(pluginsUIMain, Runnable {
                 p.sendMessage("§b[PluginsUI] ${name}を削除中...")
 
-                if (clickType.isShiftClick) {
-                    val newFile = File(pluginsUIMain.dataFolder, "backup/${LocalDateTime.now().format(dateTimeFormatter)}-${file.name}")
-                    if (file.isFile) FileUtils.moveFile(file, newFile) else FileUtils.moveDirectory(file, newFile)
+                if (!clickType.isShiftClick) {
+                    val newFile = File(pluginsUIMain.dataFolder, "backup/${LocalDateTime.now().format(dateTimeFormatter)}-${abstractFile.file.name}")
+                    newFile.parentFile.mkdir()
+                    if (abstractFile.file.isFile) FileUtils.moveFile(abstractFile.file, newFile) else FileUtils.moveDirectory(abstractFile.file, newFile)
                 }
-                if (file.isFile) FileUtils.delete(file) else FileUtils.deleteDirectory(file)
+                if (abstractFile.file.isFile) FileUtils.delete(abstractFile.file) else FileUtils.deleteDirectory(abstractFile.file)
                 p.sendMessage("§b[PluginsUI] ${name}の削除を終了しました")
                 Bukkit.getScheduler().runTask(pluginsUIMain, Runnable {
                     p.playSound(p, Sound.BLOCK_SHULKER_BOX_OPEN, 1.0F, 1.0F)
-                    PluginsUI(file.parentFile.path, p).showUI(p)
+                    PluginsUI(abstractFile.file.parentFile.path, p).showUI(p)
                 })
             })
         } else {

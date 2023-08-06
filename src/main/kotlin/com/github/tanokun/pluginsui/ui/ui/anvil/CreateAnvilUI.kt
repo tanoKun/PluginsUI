@@ -3,34 +3,39 @@ package com.github.tanokun.pluginsui.ui.ui.anvil
 import com.comphenix.protocol.PacketType
 import com.comphenix.protocol.events.PacketAdapter
 import com.comphenix.protocol.events.PacketEvent
-import de.studiocode.invui.gui.builder.GUIBuilder
-import de.studiocode.invui.gui.builder.guitype.GUIType
-import de.studiocode.invui.item.builder.ItemBuilder
-import de.studiocode.invui.window.impl.single.AnvilWindow
-import com.github.tanokun.pluginsui.ui.ui.PluginsUI
 import com.github.tanokun.pluginsui.pluginsUIMain
 import com.github.tanokun.pluginsui.ui.AbstractUI
+import com.github.tanokun.pluginsui.ui.ui.PluginsUI
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.metadata.FixedMetadataValue
+import xyz.xenondevs.invui.gui.Gui
+import xyz.xenondevs.invui.item.builder.ItemBuilder
+import xyz.xenondevs.invui.item.impl.SimpleItem
+import xyz.xenondevs.invui.window.AnvilWindow
 import java.io.File
 
 private const val PLUGINS_UI_CREATE = "PluginsUI_Create"
 
 class CreateAnvilUI(val file: File, private val isFile: Boolean): AbstractUI() {
     init {
-        guiContext = GUIBuilder(GUIType.NORMAL)
-            .setStructure("x # #")
+        guiContext = Gui.normal()
+            .setStructure("x # x")
             .addIngredient('x', ItemBuilder(if (isFile) Material.PAPER else Material.BOOK).setDisplayName(if (isFile) "ファイル名を入力" else "フォルダ名を入力"))
             .build()
     }
 
     override fun showUI(player: Player) {
-        AnvilWindow(player, if (isFile) "§lファイルを新規作成します" else "§lフォルダを新規作成します", guiContext) {
-            player.setMetadata(PLUGINS_UI_CREATE, FixedMetadataValue(pluginsUIMain, Pair(File(file, it), isFile)))
-        }.show()
+        AnvilWindow.single()
+            .setGui(guiContext)
+            .setTitle(if (isFile) "§lファイルを新規作成します" else "§lフォルダを新規作成します")
+            .addRenameHandler {
+                player.setMetadata(PLUGINS_UI_CREATE, FixedMetadataValue(pluginsUIMain, Pair(File(file, it), isFile)))
+                this.guiContext.setItem(2, SimpleItem(ItemBuilder(Material.PAPER).setDisplayName(it)))
+            }
+            .open(player)
     }
 }
 

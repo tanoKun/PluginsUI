@@ -3,36 +3,41 @@ package com.github.tanokun.pluginsui.ui.ui.anvil
 import com.comphenix.protocol.PacketType
 import com.comphenix.protocol.events.PacketAdapter
 import com.comphenix.protocol.events.PacketEvent
-import de.studiocode.invui.gui.builder.GUIBuilder
-import de.studiocode.invui.gui.builder.guitype.GUIType
-import de.studiocode.invui.item.builder.ItemBuilder
-import de.studiocode.invui.window.impl.single.AnvilWindow
-import com.github.tanokun.pluginsui.ui.ui.PluginsUI
 import com.github.tanokun.pluginsui.pluginsUIMain
 import com.github.tanokun.pluginsui.ui.AbstractUI
+import com.github.tanokun.pluginsui.ui.ui.PluginsUI
 import org.apache.commons.io.FileUtils
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.metadata.FixedMetadataValue
+import xyz.xenondevs.invui.gui.Gui
+import xyz.xenondevs.invui.item.builder.ItemBuilder
+import xyz.xenondevs.invui.item.impl.SimpleItem
+import xyz.xenondevs.invui.window.AnvilWindow
 import java.io.File
 
 private const val PLUGINS_UI_RENAME = "PluginsUI_Rename"
 
 class MoveAnvilUI(val file: File): AbstractUI() {
     init {
-        guiContext = GUIBuilder(GUIType.NORMAL)
-            .setStructure("x # #")
+        guiContext = Gui.normal()
+            .setStructure("x # x")
             .addIngredient('x', ItemBuilder(Material.PAPER).setDisplayName(file.name))
             .build()
     }
 
     override fun showUI(player: Player) {
         val name = if (file.isFile) "ファイル" else "フォルダ"
-        AnvilWindow(player, "§l${name}を移動する", guiContext) {
-            player.setMetadata(PLUGINS_UI_RENAME, FixedMetadataValue(pluginsUIMain, Pair(file, it)))
-        }.show()
+        AnvilWindow.single()
+            .setGui(guiContext)
+            .setTitle("§l${name}を移動する")
+            .addRenameHandler {
+                player.setMetadata(PLUGINS_UI_RENAME, FixedMetadataValue(pluginsUIMain, Pair(file, it)))
+                this.guiContext.setItem(2, SimpleItem(ItemBuilder(Material.PAPER).setDisplayName(it)))
+            }
+            .open(player)
     }
 }
 

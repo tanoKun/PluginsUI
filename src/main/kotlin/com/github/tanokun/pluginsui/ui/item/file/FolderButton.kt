@@ -1,8 +1,5 @@
 package com.github.tanokun.pluginsui.ui.item.file
 
-import de.studiocode.invui.item.ItemProvider
-import de.studiocode.invui.item.builder.ItemBuilder
-import de.studiocode.invui.item.impl.BaseItem
 import com.github.tanokun.pluginsui.ui.ui.OperateUI
 import com.github.tanokun.pluginsui.ui.ui.PluginsUI
 import com.github.tanokun.pluginsui.ui.ui.hasPluginsUICooltime
@@ -12,9 +9,12 @@ import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryClickEvent
+import xyz.xenondevs.invui.item.ItemProvider
+import xyz.xenondevs.invui.item.builder.ItemBuilder
+import xyz.xenondevs.invui.item.impl.AbstractItem
 import java.io.File
 
-class FolderButton(private val folder: File, private val glowing: Boolean = false): BaseItem() {
+class FolderButton(private val folder: File, private val glowing: Boolean = false): AbstractItem() {
     override fun getItemProvider(): ItemProvider {
 
         return ItemBuilder(if (glowing) Material.WRITTEN_BOOK else Material.BOOK)

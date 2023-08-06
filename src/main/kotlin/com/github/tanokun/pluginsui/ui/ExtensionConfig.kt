@@ -12,25 +12,14 @@ import java.io.File
 import java.util.*
 
 object ExtensionConfig: Config("extensionConfig.yml", true) {
-    val accessPermissions = hashMapOf<UUID, ArrayList<String>>()
-    val eachPermissions = hashMapOf<Pair<UUID, String>, String>()
+    val accessPermissions = hashMapOf<UUID, List<FilePermission>>()
 
     init {
         val permission = ConfigEntity(pluginsUIMain, File(pluginsUIMain.dataFolder, "userPermission.yml"), "userPermission.yml")
         permission.createConfig()
         for (uuidString in permission.config.getKeys(false)) {
             val uuid = UUID.fromString(uuidString)
-            val playerAccessPermissions = arrayListOf<String>()
-            permission.config.getStringList(uuidString).forEach {
-                if (it == "ALL") {
-                    playerAccessPermissions.add("ALL")
-                    return@forEach
-                }
-                val split = it.split(" ")
-                playerAccessPermissions.add(split[0])
-                eachPermissions[Pair(uuid, split[0])] = split[1]
-            }
-            accessPermissions[uuid] = playerAccessPermissions
+            accessPermissions[uuid] = permission.config.getStringList(uuidString).map { FilePermission(it) }
         }
     }
 
@@ -69,4 +58,22 @@ object ExtensionConfig: Config("extensionConfig.yml", true) {
 
         return@lazy value
     }.value
+}
+
+class FilePermission(raw: String) {
+    val path: String
+
+    val canCreate: Boolean = raw.contains("CREATE") || raw.contains("ALL")
+
+    val canMove: Boolean = raw.contains("MOVE") || raw.contains("ALL")
+
+    val canDelete: Boolean = raw.contains("DELETE") || raw.contains("ALL")
+
+    val canEdit: Boolean = raw.contains("EDIT") || raw.contains("ALL")
+
+    val canDownload: Boolean = raw.contains("DOWNLOAD") || raw.contains("ALL")
+
+    init {
+        path = raw.split(" ")[0]
+    }
 }

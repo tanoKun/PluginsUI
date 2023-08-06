@@ -1,11 +1,9 @@
 package com.github.tanokun.pluginsui.ui.item.operate
 
 import com.github.tanokun.pluginsui.pluginsUIMain
-import de.studiocode.invui.item.ItemProvider
-import de.studiocode.invui.item.builder.ItemBuilder
-import de.studiocode.invui.item.impl.BaseItem
 import com.github.tanokun.pluginsui.ui.ExtensionConfig
 import com.github.tanokun.pluginsui.ui.ui.PluginsUI
+import com.github.tanokun.pluginsui.util.AbstractFile
 import com.github.tanokun.pluginsui.util.io.runTaskSync
 import net.kyori.adventure.bossbar.BossBar
 import net.kyori.adventure.text.Component
@@ -17,6 +15,9 @@ import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.metadata.FixedMetadataValue
+import xyz.xenondevs.invui.item.ItemProvider
+import xyz.xenondevs.invui.item.builder.ItemBuilder
+import xyz.xenondevs.invui.item.impl.AbstractItem
 import java.io.File
 import java.io.IOException
 import java.net.SocketException
@@ -25,26 +26,18 @@ import kotlin.math.pow
 
 const val PLUGINS_UI_METADATA_KEY_EDIT = "PluginsUI_Download"
 
-class OperateEditButton(val file: File): BaseItem() {
+class OperateEditButton(private val abstractFile: AbstractFile): AbstractItem() {
 
     override fun getItemProvider(): ItemProvider {
-        if (file.isDirectory) return ItemBuilder(Material.AIR)
+        if (abstractFile.file.isDirectory) return ItemBuilder(Material.AIR)
         return ItemBuilder(Material.QUARTZ)
             .setDisplayName("§b§lファイルを編集する")
     }
 
     override fun handleClick(clickType: ClickType, p: Player, e: InventoryClickEvent) {
-        if (file.isDirectory) return
+        if (abstractFile.file.isDirectory) return
 
-        var permissions = ExtensionConfig.eachPermissions[Pair(p.uniqueId, file.path)] ?: ""
-
-        var loopFile = file.parentFile
-        while (loopFile != null && permissions == "") {
-            permissions = ExtensionConfig.eachPermissions[Pair(p.uniqueId, loopFile.path)] ?: ""
-            loopFile = loopFile.parentFile
-        }
-
-        if (!permissions.contains("EDIT") && !permissions.contains("ALL") && !(ExtensionConfig.accessPermissions[p.uniqueId] ?: arrayListOf()).contains("ALL")) {
+        if (!abstractFile.canEdit) {
             p.sendMessage("§c[PluginsUI] あなたはこのフォルダに対する編集権限を持っていません")
             p.playSound(p, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0F, 1.0F)
             p.closeInventory()
@@ -53,7 +46,7 @@ class OperateEditButton(val file: File): BaseItem() {
 
         val audience = pluginsUIMain.bukkitAudiences.player(p)
 
-        p.setMetadata(PLUGINS_UI_METADATA_KEY_EDIT, FixedMetadataValue(pluginsUIMain, file))
+        p.setMetadata(PLUGINS_UI_METADATA_KEY_EDIT, FixedMetadataValue(pluginsUIMain, abstractFile.file))
         p.playSound(p, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0F, 1.0F)
         p.closeInventory()
         audience.sendMessage(

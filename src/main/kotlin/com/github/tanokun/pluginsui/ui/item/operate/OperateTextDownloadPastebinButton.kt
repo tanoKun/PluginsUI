@@ -1,16 +1,14 @@
 package com.github.tanokun.pluginsui.ui.item.operate
 
+import com.github.tanokun.pluginsui.pluginsUIMain
+import com.github.tanokun.pluginsui.ui.ExtensionConfig
+import com.github.tanokun.pluginsui.ui.ui.pastebinClient
+import com.github.tanokun.pluginsui.util.AbstractFile
+import com.github.tanokun.pluginsui.util.io.runTaskAsync
 import com.pastebin.api.Expiration
 import com.pastebin.api.Format
 import com.pastebin.api.Visibility
 import com.pastebin.api.request.PasteRequest
-import de.studiocode.invui.item.ItemProvider
-import de.studiocode.invui.item.builder.ItemBuilder
-import de.studiocode.invui.item.impl.BaseItem
-import com.github.tanokun.pluginsui.ui.ExtensionConfig
-import com.github.tanokun.pluginsui.ui.ui.pastebinClient
-import com.github.tanokun.pluginsui.pluginsUIMain
-import com.github.tanokun.pluginsui.util.io.runTaskAsync
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
 import org.bukkit.Material
@@ -18,30 +16,24 @@ import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryClickEvent
-import java.io.File
+import xyz.xenondevs.invui.item.ItemProvider
+import xyz.xenondevs.invui.item.builder.ItemBuilder
+import xyz.xenondevs.invui.item.impl.AbstractItem
 
-class OperateTextDownloadPastebinButton(val file: File, val player: Player): BaseItem() {
+class OperateTextDownloadPastebinButton(private val abstractFile: AbstractFile): AbstractItem() {
 
     override fun getItemProvider(): ItemProvider {
-        if (file.isDirectory) return ItemBuilder(Material.AIR)
-        if (!ExtensionConfig.textExtensions.contains(file.extension)) return ItemBuilder(Material.AIR)
+        if (abstractFile.file.isDirectory) return ItemBuilder(Material.AIR)
+        if (!ExtensionConfig.textExtensions.contains(abstractFile.file.extension)) return ItemBuilder(Material.AIR)
         return ItemBuilder(Material.FIREWORK_ROCKET)
             .setDisplayName("§b§lテキストファイルとしてダウンロードする")
     }
 
     override fun handleClick(clickType: ClickType, p: Player, e: InventoryClickEvent) {
-        if (file.isDirectory) return
-        if (!ExtensionConfig.textExtensions.contains(file.extension)) return
+        if (abstractFile.file.isDirectory) return
+        if (!ExtensionConfig.textExtensions.contains(abstractFile.file.extension)) return
 
-        var permissions = ExtensionConfig.eachPermissions[Pair(p.uniqueId, file.path)] ?: ""
-
-        var loopFile = file.parentFile
-        while (loopFile != null && permissions == "") {
-            permissions = ExtensionConfig.eachPermissions[Pair(p.uniqueId, loopFile.path)] ?: ""
-            loopFile = loopFile.parentFile
-        }
-
-        if (!permissions.contains("DOWNLOAD") && !permissions.contains("ALL") && !(ExtensionConfig.accessPermissions[p.uniqueId] ?: arrayListOf()).contains("ALL")) {
+        if (!abstractFile.canDownload) {
             p.sendMessage("§c[PluginsUI] あなたはこのフォルダに対するダウンロード権限を持っていません")
             p.playSound(p, Sound.BLOCK_NOTE_BLOCK_BASS, 1.0F, 1.0F)
             p.closeInventory()
@@ -55,7 +47,7 @@ class OperateTextDownloadPastebinButton(val file: File, val player: Player): Bas
         p.sendMessage("§b[PluginsUI] テキストファイルをアップロード中...")
 
         runTaskAsync {
-            val text = file.readText()
+            val text = abstractFile.file.readText()
             if (text.isEmpty()) {
                 p.sendMessage("§c[PluginsUI] このテキストファイルには中身がありません")
                 return@runTaskAsync
@@ -65,7 +57,7 @@ class OperateTextDownloadPastebinButton(val file: File, val player: Player): Bas
                 .content(text)
                 .visibility(Visibility.UNLISTED)
                 .format(Format.GETTEXT)
-                .name(file.path)
+                .name(abstractFile.file.path)
                 .expiration(Expiration.TEN_MINUTES)
                 .build()
 

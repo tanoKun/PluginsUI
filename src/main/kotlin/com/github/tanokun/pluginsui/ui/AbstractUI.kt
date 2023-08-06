@@ -1,10 +1,10 @@
 package com.github.tanokun.pluginsui.ui
 
-import de.studiocode.invui.gui.GUI
 import org.bukkit.entity.Player
+import xyz.xenondevs.invui.gui.Gui
 
 abstract class AbstractUI {
-    lateinit var guiContext: GUI
+    lateinit var guiContext: Gui
         protected set
     
     abstract fun showUI(player: Player)

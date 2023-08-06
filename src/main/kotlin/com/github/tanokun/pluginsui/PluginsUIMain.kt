@@ -8,6 +8,7 @@ import com.github.tanokun.pluginsui.ui.ui.anvil.CreateAnvilListener
 import com.github.tanokun.pluginsui.ui.ui.anvil.RenameAnvilListener
 import com.github.tanokun.pluginsui.ui.ui.anvil.SelectAnvilListener
 import dev.jorel.commandapi.CommandAPI
+import dev.jorel.commandapi.CommandAPIBukkitConfig
 import net.kyori.adventure.platform.bukkit.BukkitAudiences
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -26,7 +27,8 @@ class PluginsUIMain : JavaPlugin() {
         RenameAnvilListener()
         SelectAnvilListener()
 
-        CommandAPI.onEnable(this)
+        CommandAPI.onLoad(CommandAPIBukkitConfig(this))
+        CommandAPI.onEnable()
         FileCommand()
         File2Command()
     }

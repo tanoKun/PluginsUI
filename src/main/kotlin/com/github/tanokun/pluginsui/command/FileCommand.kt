@@ -1,13 +1,10 @@
 package com.github.tanokun.pluginsui.command
 
-import com.github.tanokun.pluginsui.pluginsUIMain
-import com.pastebin.api.PastebinException
-import dev.jorel.commandapi.CommandAPICommand
-import dev.jorel.commandapi.arguments.TextArgument
-import dev.jorel.commandapi.executors.PlayerCommandExecutor
 import com.github.tanokun.pluginsui.command.command.AbstractCommand
 import com.github.tanokun.pluginsui.command.command.SubCommand
+import com.github.tanokun.pluginsui.pluginsUIMain
 import com.github.tanokun.pluginsui.ui.ExtensionConfig
+import com.github.tanokun.pluginsui.ui.FilePermission
 import com.github.tanokun.pluginsui.ui.item.operate.PLUGINS_UI_METADATA_KEY_EDIT
 import com.github.tanokun.pluginsui.ui.item.operate.PLUGINS_UI_METADATA_KEY_EDIT_PASTEBIN
 import com.github.tanokun.pluginsui.ui.item.operate.pluginsUIEditDownload
@@ -16,7 +13,11 @@ import com.github.tanokun.pluginsui.ui.ui.pastebinClient
 import com.github.tanokun.pluginsui.util.config.ConfigEntity
 import com.github.tanokun.pluginsui.util.io.runTaskAsync
 import com.github.tanokun.pluginsui.util.io.runTaskSync
-import org.bukkit.command.Command
+import com.pastebin.api.PastebinException
+import dev.jorel.commandapi.CommandAPICommand
+import dev.jorel.commandapi.arguments.TextArgument
+import dev.jorel.commandapi.executors.CommandArguments
+import dev.jorel.commandapi.executors.PlayerCommandExecutor
 import org.bukkit.entity.Player
 import java.io.File
 import java.util.*
@@ -32,24 +33,13 @@ class FileCommand : AbstractCommand(
     @SubCommand
     private fun reload(): CommandAPICommand {
         return CommandAPICommand("reload")
-            .executesPlayer(PlayerCommandExecutor { p: Player, args: Array<Any> ->
+            .executesPlayer(PlayerCommandExecutor { _: Player, _: CommandArguments ->
                 val permission = ConfigEntity(pluginsUIMain, File(pluginsUIMain.dataFolder, "userPermission.yml"), "userPermission.yml")
-                ExtensionConfig.eachPermissions.clear()
                 ExtensionConfig.accessPermissions.clear()
                 permission.createConfig()
                 for (uuidString in permission.config.getKeys(false)) {
                     val uuid = UUID.fromString(uuidString)
-                    val playerAccessPermissions = arrayListOf<String>()
-                    permission.config.getStringList(uuidString).forEach {
-                        if (it == "ALL") {
-                            playerAccessPermissions.add("ALL")
-                            return@forEach
-                        }
-                        val split = it.split(" ")
-                        playerAccessPermissions.add(split[0])
-                        ExtensionConfig.eachPermissions[Pair(uuid, split[0])] = split[1]
-                    }
-                    ExtensionConfig.accessPermissions[uuid] = playerAccessPermissions
+                    ExtensionConfig.accessPermissions[uuid] = permission.config.getStringList(uuidString).map { FilePermission(it) }
                 }
             })
     }
@@ -58,7 +48,7 @@ class FileCommand : AbstractCommand(
     private fun edit(): CommandAPICommand {
         return CommandAPICommand("edit")
             .withArguments(TextArgument("url"))
-            .executesPlayer(PlayerCommandExecutor { p: Player, args: Array<Any> ->
+            .executesPlayer(PlayerCommandExecutor { p: Player, args: CommandArguments ->
                 if (!p.hasMetadata(PLUGINS_UI_METADATA_KEY_EDIT)) {
                     p.sendMessage("§c[PluginsUI] ダウンロードするファイルの対象が見つかりません。UIから選択してください")
                     return@PlayerCommandExecutor
@@ -79,7 +69,7 @@ class FileCommand : AbstractCommand(
     private fun pastebin(): CommandAPICommand {
         return CommandAPICommand("pastebin")
             .withArguments(TextArgument("id"))
-            .executesPlayer(PlayerCommandExecutor { p: Player, args: Array<Any> ->
+            .executesPlayer(PlayerCommandExecutor { p: Player, args: CommandArguments ->
                 if (!p.hasMetadata(PLUGINS_UI_METADATA_KEY_EDIT_PASTEBIN)) {
                     p.sendMessage("§c[PluginsUI] ダウンロードするファイルの対象が見つかりません。UIから選択してください")
                     return@PlayerCommandExecutor

@@ -162,9 +162,16 @@
 
     <dependencies>
         <dependency>
-            <groupId>de.studiocode.invui</groupId>
-            <artifactId>InvUI</artifactId>
-            <version>0.8-SNAPSHOT</version>
+            <groupId>xyz.xenondevs.invui</groupId>
+            <artifactId>invui-kotlin</artifactId>
+            <version>1.9</version>
+        </dependency>
+
+        <dependency>
+            <groupId>xyz.xenondevs.invui</groupId>
+            <artifactId>invui</artifactId>
+            <version>1.9</version>
+            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
@@ -207,14 +214,13 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot</artifactId>
-            <version>1.18.1-R0.1-SNAPSHOT</version>
+            <version>1.19.4-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dev.jorel</groupId>
-            <artifactId>commandapi-shade</artifactId>
-            <version>8.5.1</version>
-            <scope>provided</scope>
+            <artifactId>commandapi-bukkit-shade</artifactId>
+            <version>9.0.1</version>
         </dependency>
         <dependency>
             <groupId>com.comphenix.protocol</groupId>
